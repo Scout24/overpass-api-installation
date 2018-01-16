@@ -32,6 +32,10 @@ function installNginx {
   fi
 }
 
+function installOverpassAPI {
+  ./src/install || echo "Overpass Installation failed!" exit 4
+}
+
 function installOverpassServer {
   cp -f ./src/overpass /etc/init.d/overpass
   mkdir -p -m 744 /etc/overpass && cp ./src/conf.sh /etc/overpass/
@@ -40,7 +44,7 @@ function installOverpassServer {
 
 echo "Installing components"
 
-installNginx && installOverpassServer
+installOverpassAPI && installNginx && installOverpassServer
 
 echo "Removing temporary files"
 
