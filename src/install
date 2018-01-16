@@ -2,7 +2,7 @@
 set -e
 set -x
 
-source ./conf.sh
+EXEC_DIR=$1
 
 if [[ $EUID > 0 ]]; then
 	echo "Run as root!";
@@ -12,7 +12,7 @@ fi
 CURRENT_DIR=$(pwd)
 TMP==$(mktemp -d -t tmp.XXXXXXXXXX)
 SRC=${TMP}/src
-build_deps="g++ make expat libexpat1-dev zlib1g-dev curl"
+build_deps="g++ make expat libexpat1-dev zlib1g-dev curl autotools-dev autoconf automake libtool"
 
 #
 #     TRAP FUNCTION
@@ -38,18 +38,18 @@ fi
 cd ${SRC}
 chmod u+x test-bin/*.sh
 
+echo exit 101 > /usr/sbin/policy-rc.d
+chmod +x /usr/sbin/policy-rc.d
+
+apt-get update
+apt-get install -y --force-yes --no-install-recommends ${build_deps} fcgiwrap nginx
+
 autoscan
 aclocal
 autoheader
 libtoolize
 automake --add-missing
 autoconf
-
-echo exit 101 > /usr/sbin/policy-rc.d
-chmod +x /usr/sbin/policy-rc.d
-
-apt-get update
-apt-get install -y --force-yes --no-install-recommends ${build_deps} fcgiwrap nginx
 
 rm -rf /var/lib/apt/lists/*
 

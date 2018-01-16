@@ -9,16 +9,12 @@ fi
 
 source ./src/conf.sh
 
-TMP==$(mktemp -d -t tmp.XXXXXXXXXX)
+TMP=$(mktemp -d -t tmp.XXXXXXXXXX)
 
 NGINX_CONF=/etc/nginx/nginx.conf
 
-mv "./src/*" ${TMP}/
-source "${TMP}/conf.sh"
-
-
 function removeIfSomethingBreaks {
-  [ -f ${TMP}/nginx.conf ] && mv -f ./src/nginx.conf ${NGINX_CONF}
+  [ -f ${TMP}/nginx.conf ] && cp -f ${TMP}/nginx.conf ${NGINX_CONF}
   service overpass stop 2>&1 >/dev/null
   [ -f /etc/init.d/overpass ] && rm -f /etc/init.d/overpass
   [ -d /etc/overpass ] && rm -rf /etc/overpass
@@ -27,13 +23,13 @@ function removeIfSomethingBreaks {
 function installNginx {
   if service --status-all 2>&1 | grep -Fq 'nginx'; then
     [ -f ${NGINX_CONF} ] && cp -f ${NGINX_CONF} ${TMP}/nginx.conf
-    [ -f ${TMP}/nginx.conf ] && [ -f ${NGINX_CONF} ] && cp ./src/nginx.conf ${NGINX_CONF}
+    [ -f ./src/nginx.conf ] && [ -f ${NGINX_CONF} ] && cp -f ./src/nginx.conf ${NGINX_CONF}
     service nginx restart 2>&1 >/dev/null || echo "NGINX Restart failed!" && exit 2;
   fi
 }
 
 function installOverpassAPI {
-  ./src/install || echo "Overpass Installation failed!" exit 4
+  ./src/install ${EXEC_DIR} || echo "Overpass Installation failed!" && exit 4
   [ ! -d DB_DIR ] && mkdir -p 744 ${DB_DIR}
 }
 
