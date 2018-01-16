@@ -1,0 +1,64 @@
+#!/bin/bash
+set -e
+set -x
+
+source ./conf.sh
+
+if [[ $EUID > 0 ]]; then
+	echo "Run as root!";
+	exit 1;
+fi
+
+CURRENT_DIR=$(pwd)
+TMP==$(mktemp -d -t tmp.XXXXXXXXXX)
+SRC=${TMP}/src
+build_deps="g++ make expat libexpat1-dev zlib1g-dev curl"
+
+#
+#     TRAP FUNCTION
+#
+#
+function rmTempDirectory {
+	rm -rf ${TMP}
+}
+trap rmTempDirectory EXIT
+
+if [ -d ${TMP} ]; then
+	echo "Directory already exists! It is a temporary directory and should not exist yet."
+	exit -1;
+else
+	git clone -b test758_lz4hash --recurse-submodules --recursive --single-branch https://github.com/mmd-osm/Overpass-API.git ${TMP}
+fi
+
+if [ ! -d ${SRC} ]; then
+	echo "Source directory does not exist!"
+	exit -1;
+fi
+
+cd ${SRC}
+chmod u+x test-bin/*.sh
+
+autoscan
+aclocal
+autoheader
+libtoolize
+automake --add-missing
+autoconf
+
+echo exit 101 > /usr/sbin/policy-rc.d
+chmod +x /usr/sbin/policy-rc.d
+
+apt-get update
+apt-get install -y --force-yes --no-install-recommends ${build_deps} fcgiwrap nginx
+
+rm -rf /var/lib/apt/lists/*
+
+./configure CXXFLAGS="-std=c++11 -O3 -I./third_party/libosmium/include -I./third_party/protozero/include" LDFLAGS="-lpthread -lbz2 -levent -licuuc -licui18n" --prefix=${EXEC_DIR} --enable-lz4 --enable-fastcgi
+
+make install
+
+cd ../../..
+
+apt-get purge -y --auto-remove ${build_deps}
+
+echo "Finished!"
