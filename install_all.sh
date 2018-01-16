@@ -34,6 +34,7 @@ function installNginx {
 
 function installOverpassAPI {
   ./src/install || echo "Overpass Installation failed!" exit 4
+  [ ! -d DB_DIR ] && mkdir -p 744 ${DB_DIR}
 }
 
 function installOverpassServer {
@@ -51,3 +52,7 @@ echo "Removing temporary files"
 rm -rf ${TMP}
 
 echo "Finished installation"
+
+service fcgiwrap start
+service overpass start
+service nginx start
