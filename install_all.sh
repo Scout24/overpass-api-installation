@@ -24,7 +24,7 @@ function installNginx {
   if service --status-all 2>&1 | grep -Fq 'nginx'; then
     [ -f ${NGINX_CONF} ] && cp -f ${NGINX_CONF} ${TMP}/nginx.conf
     [ -f ./src/nginx.conf ] && [ -f ${NGINX_CONF} ] && cp -f ./src/nginx.conf ${NGINX_CONF}
-    service nginx restart 2>&1 >/dev/null || (echo "NGINX Restart failed!" && exit 2);
+    service nginx restart || (echo "NGINX Restart failed!" && exit 2);
   fi
 }
 
@@ -34,9 +34,9 @@ function installOverpassAPI {
 }
 
 function installOverpassServer {
-  cp -f ./src/overpass /etc/init.d/overpass
-  mkdir -p -m 744 /etc/overpass && cp ./src/conf.sh /etc/overpass/
-  service overpass start 2>&1 >/dev/null || (echo "Overpass Start failed!" && exit 3);
+  install -m 755 ./src/overpass /etc/init.d/overpass
+  install -m 744 -D ./src/conf.sh /etc/overpass
+  service overpass start || (echo "Overpass Start failed!" && exit 3);
 }
 
 echo "Installing components"
