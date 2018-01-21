@@ -25,7 +25,7 @@ function rmTempDirectory {
 }
 trap rmTempDirectory EXIT
 
-if [ -z "$(ls -A ${TMP})" ]; then
+if [ ! -z "$(ls -A ${TMP})" ]; then
 	echo "Directory exists and is not empty! It is a temporary directory and should not exist yet or should be at least empty."
 	exit -1;
 else
