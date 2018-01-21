@@ -5,3 +5,7 @@ check out the repo and start `installation_all.sh`, this downloads the latest st
 
 After installation is installs nginx configurations and an additional overpass service to start and stop the actual running overpass implementation.
 This implementation however, requires still a database to run on. 
+
+# Tested only in
+
+* Ubuntu Trusty
