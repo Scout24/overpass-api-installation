@@ -14,28 +14,27 @@ TMP=$(mktemp -d -t tmp.XXXXXXXXXX)
 NGINX_CONF=/etc/nginx/nginx.conf
 
 function removeIfSomethingBreaks {
-  [ -f ${TMP}/nginx.conf ] && cp -f ${TMP}/nginx.conf ${NGINX_CONF}
   service overpass stop 2>&1 >/dev/null
   [ -f /etc/init.d/overpass ] && rm -f /etc/init.d/overpass
   [ -d /etc/overpass ] && rm -rf /etc/overpass
+  rm -rf ${TMP}
 }
 
 function installNginx {
   if service --status-all 2>&1 | grep -Fq 'nginx'; then
-    [ -f ${NGINX_CONF} ] && cp -f ${NGINX_CONF} ${TMP}/nginx.conf
-    [ -f ./src/nginx.conf ] && [ -f ${NGINX_CONF} ] && cp -f ./src/nginx.conf ${NGINX_CONF}
+    install -bm 644 ./src/nginx.conf ${NGINX_CONF}
     service nginx restart || (echo "NGINX Restart failed!" && exit 2);
   fi
 }
 
 function installOverpassAPI {
   ./src/install ${EXEC_DIR} || (echo "Overpass Installation failed!" && exit 4)
-  [ ! -d DB_DIR ] && mkdir -p 744 ${DB_DIR}
+  [ ! -d ${DB_DIR} ] && mkdir -p 744 ${DB_DIR}
 }
 
 function installOverpassServer {
-  install -m 755 ./src/overpass /etc/init.d/overpass
-  install -m 744 -D ./src/conf.sh /etc/overpass
+  mkdir -p /etc/init.d && cp ./src/overpass "$_" && chmod 755 "$_"/overpass
+  mkdir -p /etc/overpass && cp ./src/conf.sh "$_" && chmod 744 "$_"/conf.sh
   service overpass start || (echo "Overpass Start failed!" && exit 3);
 }
 
