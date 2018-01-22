@@ -34,7 +34,9 @@ function installOverpassAPI {
 
 function installOverpassServer {
   mkdir -p /etc/init.d && cp ./src/overpass "$_" && chmod 755 "$_"/overpass
-  mkdir -p /etc/overpass && cp ./src/conf.sh "$_" && chmod 744 "$_"/conf.sh
+  mkdir -p /etc/overpass && cp ./src/conf.sh "$_" && chmod 644 "$_"/conf.sh
+  systemctl daemon-reload
+  systemctl enable overpass.service
   service overpass start || (echo "Overpass Start failed!" && exit 3);
 }
 
