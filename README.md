@@ -1,3 +1,6 @@
+# Deprecated
+Scout24 is not any longer using these features. 
+
 # overpass-api-installation
 collection of installation scripts in /bin/bash to install required components: overpass-api (7.58), its init.d service and an nginx integration
 
